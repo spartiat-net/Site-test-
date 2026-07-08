@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archives Nationales des Statistiques Inutiles</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EDE6D6;
+    --paper-dark: #E0D7C0;
+    --ink: #2B2620;
+    --red: #8C2F1E;
+    --green-stamp: #33593F;
+  }
+  *{ box-sizing:border-box; }
+  html, body{ height:100%; }
+  body{
+    margin:0; background: var(--paper);
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(0,0,0,0.03) 0, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.03) 0, transparent 40%);
+    color: var(--ink); font-family:'Courier Prime', monospace;
+    line-height:1.6;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100vh; padding: 20px; position:relative; overflow:hidden;
+  }
+  h1,h2,h3{ font-family:'Playfair Display', serif; margin:0; }
+
+  .ion{
+    position:fixed; font-family:'Courier Prime', monospace; font-size:12px;
+    color: var(--ink); opacity:0.18; border:1px solid var(--ink); border-radius:3px;
+    padding:1px 6px; transform: rotate(var(--rot,0deg)); user-select:none; pointer-events:none;
+    letter-spacing:0.5px; z-index:1;
+  }
+
+  .stamp-header{
+    position:absolute; top:18px; right:24px; border:3px solid var(--red); color: var(--red);
+    padding: 5px 10px; font-size:10px; font-weight:bold; transform: rotate(8deg); letter-spacing:1px;
+    font-family:'Special Elite', monospace; opacity:0.85; z-index:1;
+  }
+
+  .main{ text-align:center; max-width:560px; position:relative; z-index:2; }
+  .kicker{ font-size:11px; letter-spacing:3px; text-transform:uppercase; color: var(--red); margin-bottom:10px; }
+  .main h1{ font-size: clamp(24px, 5vw, 36px); }
+  .main .sub{ font-family:'Special Elite'; font-size:12px; color:#5c5648; margin-top:12px; max-width:42ch; margin-left:auto; margin-right:auto; }
+
+  .draw-zone{ margin: 34px 0 0; min-height: 210px; }
+  .btn{
+    font-family:'Special Elite', monospace; font-size:14px; letter-spacing:0.5px;
+    background: var(--ink); color: var(--paper); border:none; padding: 15px 28px;
+    cursor:pointer; border-radius:2px; transition: transform .1s ease, background .15s ease;
+  }
+  .btn:hover{ background: var(--red); }
+  .btn:active{ transform: translateY(1px); }
+  .btn:disabled{ opacity:0.4; cursor:default; }
+
+  @keyframes card-in{
+    from{ opacity:0; transform: translateY(10px) rotate(-1deg) scale(0.97); }
+    to{ opacity:1; transform: translateY(0) rotate(0) scale(1); }
+  }
+  @keyframes card-out{
+    0%{ opacity:1; transform: translateY(0) rotate(0) scale(1); }
+    40%{ transform: translateY(4px) rotate(-3deg) scale(1.01); }
+    100%{ opacity:0; transform: translateY(60px) rotate(14deg) scale(0.75); }
+  }
+
+  #card-drawn{
+    max-width: 480px; margin: 26px auto 0; background: var(--paper-dark);
+    border: 2px solid var(--ink); padding: 22px 24px; text-align:left; position:relative;
+    box-shadow: 6px 6px 0 rgba(0,0,0,0.12); display:none;
+    animation: card-in .35s ease;
+  }
+  #card-drawn.leaving{ animation: card-out .55s ease forwards; }
+  #card-drawn .ref{ position:absolute; top:8px; right:12px; font-size:10px; color:#7a7360; }
+  #card-drawn p{ margin:0 0 14px; font-size:15px; }
+  .vote-label{ font-family:'Special Elite'; font-size:11.5px; color:#5c5648; margin-bottom:10px; }
+  .vote-row{ display:flex; gap:14px; align-items:center; font-size:13px; }
+  .vote-btn{
+    background:none; border:1px solid var(--ink); border-radius:3px; padding: 5px 12px;
+    cursor:pointer; font-family:'Courier Prime'; font-size:13px; display:flex; align-items:center; gap:6px;
+  }
+  .vote-btn:hover:not(:disabled){ background: var(--ink); color: var(--paper); }
+  .vote-btn:disabled{ opacity:0.35; cursor:default; }
+  .vote-btn .txt{ font-size:11.5px; }
+
+  .stamp-approved{
+    position:absolute; bottom:12px; right:14px; border:2px solid var(--green-stamp); color: var(--green-stamp);
+    font-family:'Special Elite'; font-size:10px; padding:2px 6px; transform: rotate(-6deg) scale(1.6); opacity:0;
+    transition: opacity .2s ease, transform .2s ease; letter-spacing:1px;
+  }
+  .stamp-approved.rejected{ border-color: var(--red); color: var(--red); }
+  .stamp-approved.show{ opacity:0.9; transform: rotate(-6deg) scale(1); }
+
+  .captcha{
+    position:absolute; bottom:8px; right:10px; display:flex; z-index:1;
+    padding:2px 5px; opacity:0.5;
+  }
+  .captcha span{
+    font-family:'Courier Prime', monospace; font-size:6px; color:#8a8264;
+    display:inline-block;
+  }
+
+  .music-toggle{
+    position:fixed; bottom:14px; left:14px; width:32px; height:32px; border-radius:50%;
+    background: var(--ink); border:1px solid var(--ink); color: var(--paper);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px;
+    z-index:3; transition: opacity .2s ease;
+  }
+  .music-toggle:hover{ opacity:0.8; }
+  .music-toggle.off{ opacity:0.3; }
+
+  @media (max-width:600px){
+    .ion{ font-size:10px; }
+  }
+</style>
+</head>
+<body>
+
+<span class="ion" style="top:14%; left:6%; --rot:-8deg;">Li⁺</span>
+<span class="ion" style="top:24%; right:8%; --rot:6deg;">O²⁻</span>
+<span class="ion" style="bottom:32%; left:9%; --rot:5deg;">U⁴⁺</span>
+<span class="ion" style="top:46%; right:5%; --rot:-5deg;">I⁻</span>
+<span class="ion" style="bottom:16%; right:14%; --rot:7deg;">S²⁻</span>
+
+<div class="stamp-header">ARCHIVE<br>OFFICIELLE</div>
+
+<div class="main">
+  <div class="kicker">Registre N° 0000-INUTILE</div>
+  <h1>Archives Nationales<br>des Statistiques Inutiles</h1>
+  <div class="sub">« Ce que personne n'a demandé, classé avec le plus grand sérieux depuis une date indéterminée. »</div>
+
+  <div class="draw-zone">
+    <button class="btn" id="draw-btn">🗂 TIRER UNE FICHE AU HASARD</button>
+    <div id="card-drawn">
+      <div class="ref" id="drawn-ref">RÉF. —</div>
+      <p id="drawn-text"></p>
+      <div class="vote-label">Cette fiche mérite-t-elle d'être classée aux Archives ?</div>
+      <div class="vote-row">
+        <button class="vote-btn" id="up-btn">👍 <span class="txt">Classer</span></button>
+        <button class="vote-btn" id="down-btn">👎 <span class="txt">Rejeter</span></button>
+      </div>
+      <div class="stamp-approved" id="stamp">CLASSÉ</div>
+    </div>
+  </div>
+</div>
+
+<div class="captcha">
+  <span style="transform:rotate(-6deg) translateY(1px);">A</span><span style="transform:rotate(4deg);">L</span><span style="transform:rotate(-3deg) translateY(-1px);">B</span><span style="transform:rotate(5deg) translateY(1px);">E</span><span style="transform:rotate(-4deg);">R</span><span style="transform:rotate(3deg) translateY(-1px);">T</span><span style="width:5px;"></span><span style="transform:rotate(-5deg);">3</span><span style="transform:rotate(4deg) translateY(1px);">B</span>
+</div>
+
+<button class="music-toggle" id="music-toggle" title="Musique d'ascenseur">🔊</button>
+
+<script>
+const facts = [
+  "Le caca du wombat est cubique — un des rares excréments naturellement en forme de cube, ce qui l'empêche de rouler quand l'animal marque son territoire.",
+  "On estime à environ 340 000 le nombre de mouettes présentes au Mozambique. Personne n'a demandé ce chiffre, mais il figure désormais ici.",
+  "Une personne moyenne appuie sur le bouton « fermeture des portes » d'un ascenseur environ 5 fois de plus que nécessaire à chaque trajet.",
+  "Un escargot peut dormir jusqu'à 3 années consécutives, principalement pour économiser de l'énergie en période de sécheresse.",
+  "Un groupe de flamants roses porte officiellement le nom de « flamboyance ».",
+  "Le tout premier email jamais envoyé, en 1971, contenait simplement la suite de lettres « QWERTYUIOP ».",
+  "On estime à 27 le nombre moyen de fois qu'une personne dit « euh » pendant une conversation de 10 minutes.",
+  "Il existerait dans le monde plus d'agrafeuses jamais utilisées que d'agrafeuses réellement actionnées au moins une fois.",
+  "Statistiquement, vous venez de lire cette phrase en articulant les mots dans votre tête, sans pouvoir vous en empêcher.",
+  "Le mot « OK » serait prononcé ou écrit environ un milliard de fois par jour dans le monde, sans qu'aucun organisme n'ait jamais confirmé pourquoi ce chiffre précis circule."
+];
+
+const drawBtn = document.getElementById('draw-btn');
+const cardDrawn = document.getElementById('card-drawn');
+const drawnText = document.getElementById('drawn-text');
+const drawnRef = document.getElementById('drawn-ref');
+const upBtn = document.getElementById('up-btn');
+const downBtn = document.getElementById('down-btn');
+const stamp = document.getElementById('stamp');
+
+function resetCard(){
+  cardDrawn.classList.remove('leaving');
+  stamp.classList.remove('show','rejected');
+  upBtn.disabled = false;
+  downBtn.disabled = false;
+}
+
+drawBtn.addEventListener('click', () => {
+  const i = Math.floor(Math.random() * facts.length);
+  drawnText.textContent = facts[i];
+  drawnRef.textContent = 'RÉF. N° ' + String(i+1).padStart(3,'0');
+  resetCard();
+  cardDrawn.style.display = 'block';
+  cardDrawn.style.animation = 'none';
+  void cardDrawn.offsetWidth;
+  cardDrawn.style.animation = '';
+  drawBtn.disabled = true;
+});
+
+function vote(rejected){
+  upBtn.disabled = true;
+  downBtn.disabled = true;
+  stamp.textContent = rejected ? 'REJETÉ' : 'CLASSÉ';
+  stamp.classList.toggle('rejected', rejected);
+  stamp.classList.add('show');
+  setTimeout(() => {
+    cardDrawn.classList.add('leaving');
+  }, 650);
+  setTimeout(() => {
+    cardDrawn.style.display = 'none';
+    drawBtn.disabled = false;
+  }, 1250);
+}
+
+upBtn.addEventListener('click', () => vote(false));
+downBtn.addEventListener('click', () => vote(true));
+
+// Elevator music
+let audioContext = null;
+const musicToggle = document.getElementById('music-toggle');
+let isPlaying = false;
+let schedulerTimeout = null;
+
+const notes = [220, 247, 247, 247, 262, 294, 330, 330, 330, 294, 262, 247];
+const tempo = 0.55;
+
+function playNote(freq, duration, time, volume){
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, time);
+  gain.gain.exponentialRampToValueAtTime(volume, time + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+  osc.start(time);
+  osc.stop(time + duration + 0.05);
+}
+
+function scheduleLoop(){
+  if(!isPlaying) return;
+  const startTime = audioContext.currentTime + 0.05;
+  notes.forEach((freq, i) => {
+    playNote(freq, tempo * 0.9, startTime + i * tempo, 0.15);
+    if(i % 3 === 0){
+      playNote(freq / 2, tempo * 1.6, startTime + i * tempo, 0.08);
+    }
+  });
+  const loopDuration = notes.length * tempo;
+  schedulerTimeout = setTimeout(scheduleLoop, loopDuration * 1000);
+}
+
+musicToggle.addEventListener('click', () => {
+  if(!audioContext){
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  function start(){
+    isPlaying = true;
+    musicToggle.classList.remove('off');
+    musicToggle.textContent = '🔊';
+    scheduleLoop();
+  }
+  function stop(){
+    isPlaying = false;
+    musicToggle.classList.add('off');
+    musicToggle.textContent = '🔇';
+    clearTimeout(schedulerTimeout);
+  }
+  if(isPlaying){
+    stop();
+    return;
+  }
+  if(audioContext.state === 'suspended'){
+    audioContext.resume().then(start);
+  } else {
+    start();
+  }
+});
+</script>
+
+</body>
+</html>
